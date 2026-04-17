@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name         RandokuCC 繁簡轉換器
-// @namespace    https://github.com/hsienjan/randoku-cc
+// @namespace    https://github.com/irandoku/randoku-cc
 // @version      1.1.0
 // @description  以 OpenCC 為基礎的繁簡中文轉換 Userscript，支援自定義詞組、網站黑名單、自動轉換、一鍵還原
 // @author       Randoku
