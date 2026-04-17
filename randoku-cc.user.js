@@ -922,18 +922,36 @@
 
     // 批次處理新增節點的 buffer
     let pendingNodes = [];
+    let pendingTextNodes = [];
     let debounceTimer = null;
 
     function flushPending() {
-      if (pendingNodes.length === 0) return;
-      const nodes = pendingNodes;
-      pendingNodes = [];
+      // 處理新增的元素節點
+      if (pendingNodes.length > 0) {
+        const nodes = pendingNodes;
+        pendingNodes = [];
+        nodes.forEach(node => {
+          if (node.dataset?.openccConverted) return;
+          convertPage({ root: node, skipConverted: true });
+        });
+      }
 
-      // 只轉換新增的節點，跳過已轉換的
-      nodes.forEach(node => {
-        if (node.dataset?.openccConverted) return;
-        convertPage({ root: node, skipConverted: true });
-      });
+      // 處理內容變化的文字節點
+      if (pendingTextNodes.length > 0) {
+        const textNodes = pendingTextNodes;
+        pendingTextNodes = [];
+        const settings = getSettings();
+        textNodes.forEach(textNode => {
+          if (!textNode.parentNode) return;
+          const currentText = textNode.nodeValue;
+          if (!currentText || !currentText.trim()) return;
+          const converted = applyCustomRules(currentText, settings);
+          if (converted !== currentText) {
+            originalTextMap.set(textNode, currentText);
+            textNode.nodeValue = converted;
+          }
+        });
+      }
     }
 
     // 監聽 DOM 變化
@@ -942,33 +960,45 @@
       if (currentURL !== window.location.href) {
         currentURL = window.location.href;
         pendingNodes = [];
+        pendingTextNodes = [];
         if (!isBlacklisted(currentURL, settings.blacklist)) {
           convertPage();
         }
         return;
       }
 
-      // 收集新增的節點
-      let hasNewNodes = false;
+      let needsFlush = false;
+
       for (const mutation of mutations) {
-        for (const node of mutation.addedNodes) {
-          if (node.nodeType === Node.ELEMENT_NODE && !node.dataset?.openccConverted) {
-            // 跳過 OpenCC 自己產生的 UI 元素
-            if (node.id?.startsWith('opencc-')) continue;
-            pendingNodes.push(node);
-            hasNewNodes = true;
+        // 收集新增的元素節點
+        if (mutation.type === 'childList') {
+          for (const node of mutation.addedNodes) {
+            if (node.nodeType === Node.ELEMENT_NODE && !node.dataset?.openccConverted) {
+              if (node.id?.startsWith('opencc-')) continue;
+              pendingNodes.push(node);
+              needsFlush = true;
+            }
+          }
+        }
+
+        // 收集內容變化的文字節點（例如 X 的「顯示更多」展開）
+        if (mutation.type === 'characterData') {
+          const textNode = mutation.target;
+          if (textNode.nodeType === Node.TEXT_NODE && textNode.nodeValue?.trim()) {
+            pendingTextNodes.push(textNode);
+            needsFlush = true;
           }
         }
       }
 
       // debounce 批次處理
-      if (hasNewNodes) {
+      if (needsFlush) {
         clearTimeout(debounceTimer);
         debounceTimer = setTimeout(flushPending, 300);
       }
     });
 
-    observer.observe(document.body, { childList: true, subtree: true });
+    observer.observe(document.body, { childList: true, subtree: true, characterData: true });
   }
 
   // ============================================
