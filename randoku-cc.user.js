@@ -100,18 +100,31 @@
     useBuiltin: true,     // CDN 失效時使用內建字典
   };
 
+  let _settingsCache = null;
+  let _customRulesCache = null;
+
   function getSettings() {
+    if (_settingsCache) return _settingsCache;
     try {
       const stored = GM_getValue('opencc_settings', '{}');
       const parsed = JSON.parse(stored);
-      return { ...DEFAULT_SETTINGS, ...parsed };
+      _settingsCache = { ...DEFAULT_SETTINGS, ...parsed };
+      return _settingsCache;
     } catch (e) {
-      return DEFAULT_SETTINGS;
+      _settingsCache = DEFAULT_SETTINGS;
+      return _settingsCache;
     }
   }
 
   function saveSettings(settings) {
     GM_setValue('opencc_settings', JSON.stringify(settings));
+    _settingsCache = { ...settings };
+    _customRulesCache = null;
+  }
+
+  function invalidateSettingsCache() {
+    _settingsCache = null;
+    _customRulesCache = null;
   }
 
   // ============================================
@@ -154,55 +167,66 @@
   // ============================================
   // 網站黑名單檢查
   // ============================================
+  const _blacklistRegexCache = new Map();
+
   function isBlacklisted(url, blacklist) {
     return blacklist.some(pattern => {
-      try {
-        const regex = new RegExp(pattern, 'i');
-        return regex.test(url);
-      } catch (e) {
-        return false;
+      let regex = _blacklistRegexCache.get(pattern);
+      if (regex === undefined) {
+        try {
+          regex = new RegExp(pattern, 'i');
+          _blacklistRegexCache.set(pattern, regex);
+        } catch (e) {
+          _blacklistRegexCache.set(pattern, null);
+          return false;
+        }
       }
+      if (!regex) return false;
+      return regex.test(url);
     });
   }
 
   // ============================================
   // 簡易轉換器（內建字典）
   // ============================================
+  // 預處理：將字典排序並預編譯 RegExp，避免每次轉換重新計算
+  function escapeRegExp(string) {
+    return string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  }
+
+  const BUILTIN_CONVERTER_CACHE = (() => {
+    const cache = {};
+    function buildRules(dict) {
+      return Object.keys(dict)
+        .sort((a, b) => b.length - a.length)
+        .map(key => ({ regex: new RegExp(escapeRegExp(key), 'g'), replacement: dict[key] }));
+    }
+    // cn → tw
+    cache['cn:tw'] = buildRules({ ...BUILTIN_DICT.s2t, ...BUILTIN_DICT.tw });
+    // cn → hk
+    cache['cn:hk'] = buildRules({ ...BUILTIN_DICT.s2t, ...BUILTIN_DICT.hk });
+    // tw → cn (反向字典)
+    const reverseS2T = {};
+    for (const [k, v] of Object.entries(BUILTIN_DICT.s2t)) {
+      reverseS2T[v] = k;
+    }
+    cache['tw:cn'] = buildRules(reverseS2T);
+    return cache;
+  })();
+
   function createBuiltinConverter(from, to) {
+    const cacheKey = `${from}:${to}`;
+    const rules = BUILTIN_CONVERTER_CACHE[cacheKey];
+    if (!rules) {
+      // 未知組合，回傳 identity
+      return (text) => text;
+    }
     return (text) => {
       if (!text) return text;
-
       let result = text;
-
-      // 根據方向選擇字典
-      if (from === 'cn' && to === 'tw') {
-        // 簡轉繁（台灣）
-        const dict = { ...BUILTIN_DICT.s2t, ...BUILTIN_DICT.tw };
-        // 長詞優先
-        const sortedKeys = Object.keys(dict).sort((a, b) => b.length - a.length);
-        for (const key of sortedKeys) {
-          result = result.replace(new RegExp(key, 'g'), dict[key]);
-        }
-      } else if (from === 'cn' && to === 'hk') {
-        // 簡轉繁（香港）
-        const dict = { ...BUILTIN_DICT.s2t, ...BUILTIN_DICT.hk };
-        const sortedKeys = Object.keys(dict).sort((a, b) => b.length - a.length);
-        for (const key of sortedKeys) {
-          result = result.replace(new RegExp(key, 'g'), dict[key]);
-        }
-      } else if (from === 'tw' && to === 'cn') {
-        // 繁轉簡（需要建立反向字典）
-        const reverseDict = {};
-        for (const [k, v] of Object.entries(BUILTIN_DICT.s2t)) {
-          reverseDict[v] = k;
-        }
-        const sortedKeys = Object.keys(reverseDict).sort((a, b) => b.length - a.length);
-        for (const key of sortedKeys) {
-          result = result.replace(new RegExp(key, 'g'), reverseDict[key]);
-        }
+      for (const { regex, replacement } of rules) {
+        result = result.replace(regex, replacement);
       }
-      // 其他組合可依需求擴充
-
       return result;
     };
   }
@@ -236,22 +260,40 @@
   // ============================================
   // 自定義詞組處理
   // ============================================
+  function buildCustomRulesCache(settings) {
+    const protectRegexes = settings.protectWords.map((word, idx) => ({
+      regex: new RegExp(escapeRegExp(word), 'g'),
+      placeholder: `__OPENCC_PROTECT_${idx}__`,
+    }));
+
+    const sortedRules = Object.entries(settings.customRules)
+      .sort((a, b) => b[0].length - a[0].length)
+      .filter(([from, to]) => from && from !== to)
+      .map(([from, to]) => ({
+        regex: new RegExp(escapeRegExp(from), 'g'),
+        replacement: to,
+      }));
+
+    return { protectRegexes, sortedRules };
+  }
+
   function applyCustomRules(text, settings) {
     if (!text) return text;
+
+    if (!_customRulesCache) {
+      _customRulesCache = buildCustomRulesCache(settings);
+    }
 
     let result = text;
     const placeholders = [];
 
     // 步驟 1: 保護詞組（替換為佔位符）
-    settings.protectWords.forEach((word, idx) => {
-      if (!word) return;
-      const placeholder = `__OPENCC_PROTECT_${idx}__`;
-      const regex = new RegExp(escapeRegExp(word), 'g');
+    for (const { regex, placeholder } of _customRulesCache.protectRegexes) {
       result = result.replace(regex, (match) => {
         placeholders.push({ placeholder, value: match });
         return placeholder;
       });
-    });
+    }
 
     // 步驟 2: OpenCC 轉換
     if (openccConverter) {
@@ -259,24 +301,16 @@
     }
 
     // 步驟 3: 套用自定義轉換規則
-    const sortedRules = Object.entries(settings.customRules)
-      .sort((a, b) => b[0].length - a[0].length); // 長詞優先
-
-    for (const [from, to] of sortedRules) {
-      if (!from || from === to) continue;
-      result = result.replace(new RegExp(escapeRegExp(from), 'g'), to);
+    for (const { regex, replacement } of _customRulesCache.sortedRules) {
+      result = result.replace(regex, replacement);
     }
 
     // 步驟 4: 還原保護詞組
-    placeholders.forEach(({ placeholder, value }) => {
+    for (const { placeholder, value } of placeholders) {
       result = result.replace(new RegExp(placeholder, 'g'), value);
-    });
+    }
 
     return result;
-  }
-
-  function escapeRegExp(string) {
-    return string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
   }
 
   // ============================================
@@ -782,6 +816,7 @@
     // Tab 切換
     panel.querySelectorAll('.opencc-tab').forEach(tab => {
       tab.addEventListener('click', () => {
+        saveSettingsFromUI();
         panel.querySelectorAll('.opencc-tab').forEach(t => t.classList.remove('active'));
         panel.querySelectorAll('.opencc-tab-content').forEach(c => c.classList.remove('active'));
         tab.classList.add('active');
@@ -830,6 +865,11 @@
       if (!panel.contains(e.target) && e.target !== trigger && !trigger.contains(e.target)) {
         hidePanel();
       }
+    });
+
+    // 關閉分頁前自動存檔
+    window.addEventListener('beforeunload', () => {
+      saveSettingsFromUI();
     });
   }
 
@@ -886,12 +926,12 @@
     settings.useBuiltin = panel.querySelector('#opencc-builtin').classList.contains('active');
 
     settings.protectWords = panel.querySelector('#opencc-protect').value
-      .split('\n')
+      .split(/\r?\n/)
       .map(s => s.trim())
       .filter(s => s);
 
     settings.customRules = {};
-    panel.querySelector('#opencc-custom').value.split('\n').forEach(line => {
+    panel.querySelector('#opencc-custom').value.split(/\r?\n/).forEach(line => {
       const match = line.match(/^(.+?)=(.+)$/);
       if (match) {
         settings.customRules[match[1].trim()] = match[2].trim();
@@ -899,7 +939,7 @@
     });
 
     settings.blacklist = panel.querySelector('#opencc-blacklist').value
-      .split('\n')
+      .split(/\r?\n/)
       .map(s => s.trim())
       .filter(s => s);
 
@@ -926,31 +966,38 @@
     let debounceTimer = null;
 
     function flushPending() {
+      const settings = getSettings();
+
       // 處理新增的元素節點
       if (pendingNodes.length > 0) {
         const nodes = pendingNodes;
         pendingNodes = [];
-        nodes.forEach(node => {
-          if (node.dataset?.openccConverted) return;
-          convertPage({ root: node, skipConverted: true });
-        });
+
+        // 批次處理：若節點較多，直接對 document.body 統一走一次 TreeWalker
+        if (nodes.length > 10) {
+          convertPage({ root: document.body, skipConverted: true });
+        } else {
+          for (const node of nodes) {
+            if (node.dataset?.openccConverted) continue;
+            convertPage({ root: node, skipConverted: true });
+          }
+        }
       }
 
-      // 處理內容變化的文字節點
+      // 處理內容變化的文字節點（例如 X 的「顯示更多」展開）
       if (pendingTextNodes.length > 0) {
         const textNodes = pendingTextNodes;
         pendingTextNodes = [];
-        const settings = getSettings();
-        textNodes.forEach(textNode => {
-          if (!textNode.parentNode) return;
+        for (const textNode of textNodes) {
+          if (!textNode.parentNode) continue;
           const currentText = textNode.nodeValue;
-          if (!currentText || !currentText.trim()) return;
+          if (!currentText || !currentText.trim()) continue;
           const converted = applyCustomRules(currentText, settings);
           if (converted !== currentText) {
             originalTextMap.set(textNode, currentText);
             textNode.nodeValue = converted;
           }
-        });
+        }
       }
     }
 
@@ -975,6 +1022,11 @@
           for (const node of mutation.addedNodes) {
             if (node.nodeType === Node.ELEMENT_NODE && !node.dataset?.openccConverted) {
               if (node.id?.startsWith('opencc-')) continue;
+              // 忽略不應轉換的節點類型
+              const skipTags = ['SCRIPT', 'STYLE', 'NOSCRIPT', 'IFRAME', 'SVG', 'MATH', 'TEMPLATE'];
+              if (skipTags.includes(node.tagName)) continue;
+              // 忽略 contenteditable 區域
+              if (node.isContentEditable || node.closest?.('[contenteditable]')) continue;
               pendingNodes.push(node);
               needsFlush = true;
             }
