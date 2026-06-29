@@ -39,9 +39,36 @@
       "侠": "俠", "侣": "侶", "侥": "僥", "侦": "偵", "侧": "側",
       "侨": "僑", "侩": "儈", "侬": "儂", "俣": "俁", "俦": "儔",
       "俨": "儼", "俩": "倆", "俪": "儷", "俭": "儉", "债": "債",
-      "倾": "傾", "假": "假", "偎": "偎", "偿": "償", "储": "儲",
-      "傥": "儻", "傧": "儐", "储": "儲", "傩": "儺", "傲": "傲",
-      // 更多常用字...
+      "倾": "傾", "偿": "償", "储": "儲", "傥": "儻", "傧": "儐",
+      "傩": "儺", "发": "發", "变": "變", "见": "見", "观": "觀",
+      "让": "讓", "说": "說", "话": "話", "请": "請", "谁": "誰",
+      "关": "關", "开": "開", "间": "間", "问": "問", "门": "門",
+      "闲": "閒", "处": "處", "声": "聲", "员": "員", "别": "別",
+      "场": "場", "块": "塊", "备": "備", "复": "複", "觉": "覺",
+      "历": "歷", "记": "記", "论": "論", "讲": "講", "读": "讀",
+      "写": "寫", "学": "學", "导": "導", "层": "層", "岁": "歲",
+      "岛": "島", "广": "廣", "庆": "慶", "应": "應", "怀": "懷",
+      "忆": "憶", "恼": "惱", "惯": "慣", "悬": "懸", "担": "擔",
+      "拥": "擁", "报": "報", "拦": "攔", "择": "擇", "据": "據",
+      "断": "斷", "无": "無", "时": "時", "还": "還", "过": "過",
+      "这": "這", "里": "裡", "边": "邊", "经": "經", "运": "運",
+      "进": "進", "远": "遠", "选": "選", "违": "違", "连": "連",
+      "迟": "遲", "迹": "跡", "递": "遞", "触": "觸", "订": "訂",
+      "计": "計", "讨": "討", "认": "認", "评": "評", "诉": "訴",
+      "词": "詞", "试": "試", "诗": "詩", "诚": "誠", "诞": "誕",
+      "该": "該", "详": "詳", "诧": "詫", "证": "證", "识": "識",
+      "诊": "診", "误": "誤", "诵": "誦", "谜": "謎", "谢": "謝",
+      "谈": "談", "谱": "譜", "谷": "穀", "购": "購", "赠": "贈",
+      "赞": "讚", "赶": "趕", "赵": "趙", "趋": "趨", "跃": "躍",
+      "车": "車", "轨": "軌", "轩": "軒", "轮": "輪", "转": "轉",
+      "软": "軟", "载": "載", "辅": "輔", "轻": "輕", "辞": "辭",
+      "迁": "遷", "达": "達", "适": "適", "遗": "遺", "释": "釋",
+      "鉴": "鑑", "钝": "鈍", "钢": "鋼", "钟": "鐘", "钥": "鑰",
+      "钱": "錢", "铁": "鐵", "铜": "銅", "银": "銀", "链": "鏈",
+      "锁": "鎖", "锅": "鍋", "锋": "鋒", "锐": "銳", "错": "錯",
+      "锡": "錫", "鸣": "鳴", "鸭": "鴨", "鸽": "鴿", "鹏": "鵬",
+      "鹤": "鶴", "黄": "黃", "齐": "齊", "齿": "齒", "龄": "齡",
+      "龙": "龍", "龟": "龜"
     },
     // 台灣慣用語轉換
     tw: {
@@ -56,7 +83,7 @@
       "软件": "軟體", "硬件": "硬體", "接口": "介面", "文件": "檔案",
       "文件夹": "資料夾", "驱动": "驅動", "驱动器": "磁碟機",
       "默认": "預設", "设置": "設定", "选项": "選項", "配置": "組態",
-      "变量": "變數", "函数": "函式", "方法": "方法", "对象": "物件",
+      "变量": "變數", "函数": "函式", "对象": "物件",
       "类": "類別", "实例": "實例", "属性": "屬性", "参数": "參數",
       "返回值": "回傳值", "导入": "匯入", "导出": "匯出", "命名空间": "命名空間",
       "库": "函式庫", "模块": "模組", "组件": "元件", "控件": "控制項",
@@ -67,13 +94,13 @@
     },
     // 香港慣用語
     hk: {
-      "軟件": "軟件", "軟盘": "軟碟", "硬盘": "硬碟", "打印机": "打印機",
+      "軟盘": "軟碟", "硬盘": "硬碟", "打印机": "打印機",
       "服务器": "伺服器", "网络": "網絡", "互联网": "互聯網", "信息": "資訊",
       "短信": "短訊", "摄像头": "攝錄機", "视频": "視像", "音频": "音頻",
       "鼠标": "滑鼠", "数码": "數碼", "数字": "數碼", "宽带": "寬頻",
       "笔记本电脑": "手提電腦", "台式机": "桌上電腦", "平板电脑": "平板電腦",
-      "智能手机": "智能電話", "人工智能": "人工智能", "程序": "程式",
-      "软件": "軟件", "硬件": "硬件", "文件": "檔案", "文件夹": "資料夾",
+      "智能手机": "智能電話", "程序": "程式",
+      "软件": "軟件", "文件": "檔案", "文件夹": "資料夾",
       "默认": "預設", "设置": "設定", "变量": "變數", "函数": "函數",
       "类": "類別", "对象": "物件", "参数": "參數", "库": "函數庫",
       "模块": "模組", "操作系统": "作業系統", "进程": "行程", "线程": "線程",
@@ -194,6 +221,18 @@
     return string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
   }
 
+  function reverseDict(dict) {
+    const reversed = {};
+    for (const [k, v] of Object.entries(dict)) {
+      if (k === v) continue; // ponytail: skip identity mappings
+      reversed[v] = k;
+    }
+    return reversed;
+  }
+
+  // ponytail: twp uses tw vocabulary; fallback maps twp→tw
+  const TARGET_ALIAS = { twp: 'tw' };
+
   const BUILTIN_CONVERTER_CACHE = (() => {
     const cache = {};
     function buildRules(dict) {
@@ -201,24 +240,24 @@
         .sort((a, b) => b.length - a.length)
         .map(key => ({ regex: new RegExp(escapeRegExp(key), 'g'), replacement: dict[key] }));
     }
-    // cn → tw
+    // cn → tw (twp 使用台灣慣用語，與 tw 共用字典)
     cache['cn:tw'] = buildRules({ ...BUILTIN_DICT.s2t, ...BUILTIN_DICT.tw });
+    cache['cn:twp'] = cache['cn:tw'];
     // cn → hk
     cache['cn:hk'] = buildRules({ ...BUILTIN_DICT.s2t, ...BUILTIN_DICT.hk });
-    // tw → cn (反向字典)
-    const reverseS2T = {};
-    for (const [k, v] of Object.entries(BUILTIN_DICT.s2t)) {
-      reverseS2T[v] = k;
-    }
-    cache['tw:cn'] = buildRules(reverseS2T);
+    // tw → cn (反向：s2t + tw 慣用語都反轉)
+    cache['tw:cn'] = buildRules({ ...reverseDict(BUILTIN_DICT.s2t), ...reverseDict(BUILTIN_DICT.tw) });
+    // hk → cn (反向：s2t + hk 慣用語都反轉)
+    cache['hk:cn'] = buildRules({ ...reverseDict(BUILTIN_DICT.s2t), ...reverseDict(BUILTIN_DICT.hk) });
     return cache;
   })();
 
   function createBuiltinConverter(from, to) {
-    const cacheKey = `${from}:${to}`;
+    const aliasedTo = TARGET_ALIAS[to] || to;
+    const cacheKey = `${from}:${aliasedTo}`;
     const rules = BUILTIN_CONVERTER_CACHE[cacheKey];
     if (!rules) {
-      // 未知組合，回傳 identity
+      console.warn(`[OpenCC] No builtin converter for ${from}→${to}, text unchanged`);
       return (text) => text;
     }
     return (text) => {
@@ -297,7 +336,7 @@
 
     // 步驟 2: OpenCC 轉換
     if (openccConverter) {
-      result = useBuiltin ? openccConverter(result) : openccConverter(result);
+      result = openccConverter(result);
     }
 
     // 步驟 3: 套用自定義轉換規則
@@ -417,22 +456,6 @@
     }
 
     return count;
-  }
-
-  function convertSelectedText() {
-    const selection = window.getSelection();
-    if (!selection || selection.rangeCount === 0) return;
-
-    const settings = getSettings();
-
-    // 簡易實作：替換選取文字
-    const range = selection.getRangeAt(0);
-    const selectedText = selection.toString();
-    if (!selectedText) return;
-
-    // 這裡需要更複雜的實作來處理跨節點選取
-    // 暫時使用簡易方案
-    console.log('[OpenCC] Selected text conversion not fully implemented');
   }
 
   // ============================================
@@ -802,7 +825,7 @@
               <span>優先使用內建字典</span>
               <div class="opencc-switch ${settings.useBuiltin ? 'active' : ''}" id="opencc-builtin"></div>
             </label>
-            <div class="opencc-hint">CDN 失效時的備援機制</div>
+            <div class="opencc-hint">CDN 失效時的備援機制（內建字典僅涵蓋常用字）</div>
           </div>
         </div>
       </div>
