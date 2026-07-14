@@ -1,0 +1,33 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="380" viewBox="0 0 1200 380" role="img" aria-labelledby="title desc">
+  <title id="title">RandokuCC 繁簡轉換器</title>
+  <desc id="desc">Browser userscript that converts Chinese text between Simplified, Taiwan Traditional, and Hong Kong Traditional forms, with custom rules and automatic page conversion.</desc>
+
+  <rect width="1200" height="380" rx="28" fill="#101417"/>
+  <path d="M56 68H1144M56 312H1144" stroke="#2A3438" stroke-width="2"/>
+
+  <g font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', sans-serif" fill="#F4F7F6">
+    <text x="64" y="64" font-size="16" letter-spacing="3" fill="#8BD3C7">USERSCRIPT / OPENCC</text>
+    <text x="64" y="138" font-size="52" font-weight="700">RandokuCC</text>
+    <text x="64" y="184" font-size="27" fill="#D6E3E0">讓網頁文字，讀起來像你的語言。</text>
+    <text x="64" y="228" font-size="18" fill="#A7B8B5">繁簡轉換 · 台灣／香港慣用語 · 自定義規則</text>
+    <text x="64" y="278" font-size="15" fill="#78908B">SPA 動態內容　/　網站黑名單　/　CDN fallback　/　一鍵還原</text>
+  </g>
+
+  <g transform="translate(760 82)">
+    <rect x="0" y="0" width="350" height="218" rx="18" fill="#182125" stroke="#38504D" stroke-width="2"/>
+    <circle cx="28" cy="28" r="6" fill="#F0B67F"/>
+    <circle cx="50" cy="28" r="6" fill="#8BD3C7"/>
+    <circle cx="72" cy="28" r="6" fill="#D6E3E0"/>
+    <text x="28" y="72" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" font-size="15" fill="#78908B">before</text>
+    <text x="28" y="102" font-family="'PingFang SC', sans-serif" font-size="22" fill="#F4F7F6">软件设置已保存</text>
+    <path d="M28 128H322" stroke="#38504D" stroke-width="2"/>
+    <text x="28" y="160" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" font-size="15" fill="#8BD3C7">after / 台灣繁體</text>
+    <text x="28" y="190" font-family="'PingFang SC', sans-serif" font-size="22" fill="#F4F7F6">軟體設定已儲存</text>
+  </g>
+
+  <g font-family="ui-monospace, SFMono-Regular, Menlo, monospace" font-size="13" fill="#78908B">
+    <text x="64" y="342">ALT+SHIFT+C  設定</text>
+    <text x="300" y="342">ALT+SHIFT+V  轉換</text>
+    <text x="535" y="342">ALT+SHIFT+R  還原</text>
+  </g>
+</svg>
