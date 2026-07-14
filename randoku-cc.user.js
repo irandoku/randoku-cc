@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         RandokuCC 繁簡轉換器
 // @namespace    https://github.com/irandoku/randoku-cc
-// @version      1.1.0
+// @version      1.1.1
 // @description  以 OpenCC 為基礎的繁簡中文轉換 Userscript，支援自定義詞組、網站黑名單、自動轉換、一鍵還原
 // @author       Randoku
 // @match        *://*/*
@@ -124,7 +124,7 @@
     ],
     protectWords: [],       // 保護詞組（不轉換）
     customRules: {},        // 自定義轉換規則
-    useBuiltin: true,     // CDN 失效時使用內建字典
+    useBuiltin: false,    // 預設使用 CDN；失效時自動 fallback 到內建字典
   };
 
   let _settingsCache = null;
@@ -175,19 +175,17 @@
 
   function applyPosition(trigger) {
     const pos = getPosition();
-    const size = 48;
-    const margin = 20;
+    const size = 36;
+    const margin = 12;
 
-    if (pos.x !== null && pos.y !== null) {
-      // 有儲存過位置，clamp 到可見範圍
-      const maxX = window.innerWidth - size - margin;
+    trigger.style.left = 'auto';
+    if (pos.y !== null) {
+      // 相容既有位置資料，只沿用垂直位置；按鈕固定在右側邊緣
       const maxY = window.innerHeight - size - margin;
-      trigger.style.left = Math.max(margin, Math.min(pos.x, maxX)) + 'px';
       trigger.style.top = Math.max(margin, Math.min(pos.y, maxY)) + 'px';
     } else {
-      // 預設右下角
-      trigger.style.left = (window.innerWidth - size - margin) + 'px';
-      trigger.style.top = (window.innerHeight - size - margin) + 'px';
+      // 預設右側中央，避免遮住頁面右下角常見控制項
+      trigger.style.top = Math.max(margin, (window.innerHeight - size) / 2) + 'px';
     }
   }
 
@@ -632,32 +630,39 @@
       }
       #opencc-trigger {
         position: fixed;
-        width: 48px;
-        height: 48px;
+        width: 36px;
+        height: 36px;
+        right: -18px;
         background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
         border-radius: 50%;
-        box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+        box-shadow: 0 2px 8px rgba(102, 126, 234, 0.25);
         cursor: grab;
         z-index: 999998;
         display: flex;
         align-items: center;
         justify-content: center;
         color: white;
-        font-size: 20px;
+        font-size: 16px;
+        opacity: 0.4;
         user-select: none;
         -webkit-user-select: none;
         touch-action: none;
       }
       #opencc-trigger.opencc-dragging {
         cursor: grabbing;
+        opacity: 1;
         box-shadow: 0 6px 20px rgba(102, 126, 234, 0.6);
         transform: scale(1.1);
         transition: none;
       }
       #opencc-trigger:not(.opencc-dragging) {
-        transition: transform 0.2s, box-shadow 0.2s;
+        transition: right 0.25s ease, opacity 0.2s, transform 0.2s, box-shadow 0.2s;
       }
-      #opencc-trigger:hover {
+      #opencc-trigger:hover,
+      #opencc-trigger:focus-visible,
+      #opencc-trigger.opencc-panel-open {
+        right: 0;
+        opacity: 1;
         transform: scale(1.05);
         box-shadow: 0 6px 16px rgba(102, 126, 234, 0.5);
       }
@@ -709,15 +714,12 @@
       }
 
       if (dragStarted) {
-        const size = 48;
-        const margin = 20;
-        const maxX = window.innerWidth - size - margin;
+        const margin = 12;
+        const size = 36;
         const maxY = window.innerHeight - size - margin;
 
-        const newX = Math.max(margin, Math.min(startLeft + dx, maxX));
         const newY = Math.max(margin, Math.min(startTop + dy, maxY));
 
-        trigger.style.left = newX + 'px';
         trigger.style.top = newY + 'px';
       }
 
@@ -729,7 +731,7 @@
 
       if (dragStarted) {
         // 儲存位置
-        savePosition({ x: trigger.offsetLeft, y: trigger.offsetTop });
+        savePosition({ x: null, y: trigger.offsetTop });
         trigger.classList.remove('opencc-dragging');
       } else {
         // 沒有實際拖移 = 點擊，開啟面板
@@ -822,10 +824,10 @@
 
           <div class="opencc-section">
             <label class="opencc-toggle">
-              <span>優先使用內建字典</span>
+              <span>強制使用內建字典</span>
               <div class="opencc-switch ${settings.useBuiltin ? 'active' : ''}" id="opencc-builtin"></div>
             </label>
-            <div class="opencc-hint">CDN 失效時的備援機制（內建字典僅涵蓋常用字）</div>
+            <div class="opencc-hint">關閉時優先使用 CDN，失敗才使用內建字典</div>
           </div>
         </div>
       </div>
@@ -924,6 +926,7 @@
       panel.style.top = top + 'px';
 
       panel.classList.remove('opencc-hidden');
+      trigger.classList.add('opencc-panel-open');
     } else {
       hidePanel();
     }
@@ -931,8 +934,10 @@
 
   function hidePanel() {
     const panel = document.getElementById('opencc-panel');
+    const trigger = document.getElementById('opencc-trigger');
     if (panel) {
       panel.classList.add('opencc-hidden');
+      trigger?.classList.remove('opencc-panel-open');
       saveSettingsFromUI();
     }
   }
